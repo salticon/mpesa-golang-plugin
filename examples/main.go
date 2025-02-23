@@ -2,17 +2,18 @@ package main
 
 import (
 	"context"
-	"github.com/salticon/mpesa-golang-sdk"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/salticon/mpesa-golang-plugin"
 )
 
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	mpesaApp := mpesa.NewApp(http.DefaultClient, "CONSUMER_KEY", "CONSUMER_SECRET", mpesa.EnvironmentSandbox)
+	mpesaApp := mpesa.NewApp(http.DefaultClient, "CONSUMER_KEY", "CONSUMER_SECRET", mpesa.V2, mpesa.EnvironmentSandbox)
 
 	stkResp, err := mpesaApp.STKPush(ctx, "YOUR_PASSKEY", mpesa.STKPushRequest{
 		BusinessShortCode: 174379,

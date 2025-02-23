@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"os"
@@ -14,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -124,7 +125,7 @@ func TestMpesa_GenerateAccessToken(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, EnvironmentSandbox)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, EnvironmentSandbox)
 			)
 
 			tc.mock(t, app, cl)
@@ -231,7 +232,7 @@ func TestMpesa_STKPush(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, EnvironmentSandbox)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, EnvironmentSandbox)
 			)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {
@@ -458,7 +459,7 @@ func TestMpesa_B2C(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, tc.env)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, tc.env)
 			)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {
@@ -701,7 +702,7 @@ func TestMpesa_STKPushQuery(t *testing.T) {
 			t.Parallel()
 
 			cl := newMockHttpClient()
-			app := NewApp(cl, testConsumerKey, testConsumerSecret, EnvironmentSandbox)
+			app := NewApp(cl, testConsumerKey, testConsumerSecret, V2, EnvironmentSandbox)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {
 				return http.StatusOK, `
@@ -821,7 +822,7 @@ func Test_RegisterC2BURL(t *testing.T) {
 
 			var (
 				client = newMockHttpClient()
-				app    = NewApp(client, testConsumerKey, testConsumerSecret, tc.env)
+				app    = NewApp(client, testConsumerKey, testConsumerSecret, V2, tc.env)
 			)
 
 			client.MockRequest(app.endpointAuth(), func() (status int, body string) {
@@ -948,7 +949,7 @@ func TestMpesa_DynamicQR(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, EnvironmentSandbox)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, EnvironmentSandbox)
 			)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {
@@ -1140,7 +1141,7 @@ func TestMpesa_GetTransactionStatus(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, tc.env)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, tc.env)
 			)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {
@@ -1320,7 +1321,7 @@ func TestMpesa_GetAccountBalance(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, tc.env)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, tc.env)
 			)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {
@@ -1497,7 +1498,7 @@ func TestMpesa_BusinessPayBill(t *testing.T) {
 
 			var (
 				cl  = newMockHttpClient()
-				app = NewApp(cl, testConsumerKey, testConsumerSecret, tc.env)
+				app = NewApp(cl, testConsumerKey, testConsumerSecret, V2, tc.env)
 			)
 
 			cl.MockRequest(app.endpointAuth(), func() (status int, body string) {

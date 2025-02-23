@@ -113,7 +113,7 @@ func validateURL(rawURL string) error {
 }
 
 // NewApp initializes a new Mpesa app that will be used to perform C2B or B2C transactions.
-func NewApp(c HttpClient, consumerKey, consumerSecret string, env Environment) *Mpesa {
+func NewApp(c HttpClient, consumerKey, consumerSecret string, version Version, env Environment) *Mpesa {
 	if c == nil {
 		c = &http.Client{
 			Timeout: 10 * time.Second,
@@ -123,6 +123,7 @@ func NewApp(c HttpClient, consumerKey, consumerSecret string, env Environment) *
 	return &Mpesa{
 		client:         c,
 		environment:    env,
+		Version:        version,
 		cache:          make(cache),
 		consumerKey:    consumerKey,
 		consumerSecret: consumerSecret,
