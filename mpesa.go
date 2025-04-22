@@ -579,12 +579,5 @@ func decodeResponse(res *http.Response) (*Response, error) {
 	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
 		return nil, fmt.Errorf("mpesa: decode response: %v", err)
 	}
-
-	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(
-			"mpesa: request %v failed with code %v: %v", resp.RequestID, resp.ErrorCode, resp.ErrorMessage,
-		)
-	}
-
 	return &resp, nil
 }
