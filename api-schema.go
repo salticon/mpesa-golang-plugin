@@ -1,6 +1,7 @@
 package mpesa
 
 import (
+	"fmt"
 	"strings"
 	"time"
 )
@@ -599,4 +600,93 @@ func ParseAccountBalanceString(balanceStr string) []MpesAccount {
 	}
 
 	return accounts
+}
+
+type MpesaTransactionStatusCallback struct {
+	Result MpesaResult `json:"Result"`
+}
+
+type MpesaResult struct {
+	ResultType               int                         `json:"ResultType"`
+	ResultCode               int                         `json:"ResultCode"`
+	ResultDesc               string                      `json:"ResultDesc"`
+	OriginatorConversationID string                      `json:"OriginatorConversationID"`
+	ConversationID           string                      `json:"ConversationID"`
+	TransactionID            string                      `json:"TransactionID"`
+	ResultParameters         TransStatusResultParameters `json:"ResultParameters"`
+	ReferenceData            TransStatusReferenceData    `json:"ReferenceData"`
+}
+
+type TransStatusResultParameters struct {
+	ResultParameter []MpesaResultParameter `json:"ResultParameter"`
+}
+
+type MpesaResultParameter struct {
+	Key   string      `json:"Key"`
+	Value interface{} `json:"Value"`
+}
+
+type TransStatusReferenceData struct {
+	ReferenceItem TransStatusReferenceItem `json:"ReferenceItem"`
+}
+
+type TransStatusReferenceItem struct {
+	Key   string `json:"Key"`
+	Value string `json:"Value"`
+}
+
+type ParsedTransactionStatusInfo struct {
+	DebitName   string
+	DebitPhone  string
+	CreditName  string
+	CreditCode  string
+	Amount      float64
+	ReceiptNo   string
+	InitiatedAt string
+	Occasion    string
+}
+
+func ExtractTransactionStatusInfo(callback MpesaTransactionStatusCallback) ParsedTransactionStatusInfo {
+	info := ParsedTransactionStatusInfo{}
+
+	for _, param := range callback.Result.ResultParameters.ResultParameter {
+		switch param.Key {
+		case "DebitPartyName":
+			if str, ok := param.Value.(string); ok {
+				parts := strings.SplitN(str, " - ", 2)
+				if len(parts) == 2 {
+					info.DebitPhone = strings.TrimSpace(parts[0])
+					info.DebitName = strings.TrimSpace(parts[1])
+				}
+			}
+		case "CreditPartyName":
+			if str, ok := param.Value.(string); ok {
+				parts := strings.SplitN(str, " - ", 2)
+				if len(parts) == 2 {
+					info.CreditCode = strings.TrimSpace(parts[0])
+					info.CreditName = strings.TrimSpace(parts[1])
+				}
+			}
+		case "Amount":
+			switch val := param.Value.(type) {
+			case float64:
+				info.Amount = val
+			case int:
+				info.Amount = float64(val)
+			}
+		case "ReceiptNo":
+			if str, ok := param.Value.(string); ok {
+				info.ReceiptNo = str
+			}
+		case "InitiatedTime":
+			if t, ok := param.Value.(float64); ok {
+				info.InitiatedAt = fmt.Sprintf("%.0f", t)
+			} else if t, ok := param.Value.(int); ok {
+				info.InitiatedAt = fmt.Sprintf("%d", t)
+			}
+		}
+	}
+
+	info.Occasion = callback.Result.ReferenceData.ReferenceItem.Value
+	return info
 }
