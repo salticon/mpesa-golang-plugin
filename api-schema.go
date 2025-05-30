@@ -1,6 +1,9 @@
 package mpesa
 
-import "time"
+import (
+	"strings"
+	"time"
+)
 
 // DynamicQRTransactionType represents the supported transaction types for the Dynamic QR API
 type DynamicQRTransactionType string
@@ -530,3 +533,70 @@ type (
 		SenderIdentifierType IdentifierType `json:"SenderIdentifierType"`
 	}
 )
+
+type AccountBalanceCallback struct {
+	Result AccountBalanceResult `json:"Result"`
+}
+
+type AccountBalanceResult struct {
+	ResultType               int                         `json:"ResultType"`
+	ResultCode               int                         `json:"ResultCode"`
+	ResultDesc               string                      `json:"ResultDesc"`
+	OriginatorConversationID string                      `json:"OriginatorConversationID"`
+	ConversationID           string                      `json:"ConversationID"`
+	TransactionID            string                      `json:"TransactionID"`
+	ResultParameters         BalanceResultParameters     `json:"ResultParameters"`
+	ReferenceData            BalanceReferenceDataWrapper `json:"ReferenceData"`
+}
+
+type BalanceResultParameters struct {
+	ResultParameter []ResultParameterItem `json:"ResultParameter"`
+}
+
+type ResultParameterItem struct {
+	Key   string      `json:"Key"`
+	Value interface{} `json:"Value"` // Use interface{} if value can be string or number
+}
+
+type BalanceReferenceDataWrapper struct {
+	ReferenceItem BalanceReferenceItem `json:"ReferenceItem"`
+}
+
+type BalanceReferenceItem struct {
+	Key   string `json:"Key"`
+	Value string `json:"Value"`
+}
+
+type MpesAccount struct {
+	Name            string
+	Currency        string
+	Available       string
+	AvailablePosted string
+	Reserved        string
+	UnCleared       string
+}
+
+// ParseAccountBalanceString takes a string of the form "&Name|Currency|Available|AvailablePosted|Reserved|Uncleared&Name|Currency|..."
+// and returns a slice of MpesAccount structs. Malformed entries are skipped.
+func ParseAccountBalanceString(balanceStr string) []MpesAccount {
+	var accounts []MpesAccount
+
+	entries := strings.Split(balanceStr, "&")
+	for _, entry := range entries {
+		parts := strings.Split(entry, "|")
+		if len(parts) != 6 {
+			continue // skip malformed entries
+		}
+		account := MpesAccount{
+			Name:            parts[0],
+			Currency:        parts[1],
+			Available:       parts[2],
+			AvailablePosted: parts[3],
+			Reserved:        parts[4],
+			UnCleared:       parts[5],
+		}
+		accounts = append(accounts, account)
+	}
+
+	return accounts
+}
